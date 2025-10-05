@@ -1,8 +1,6 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
-import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -14,17 +12,6 @@ import { errorHandler, notFound } from './middlewares/errorHandler';
 import { prometheusMiddleware, prometheusMetricsRoute } from './middlewares/monitoring';
 import { auditLogger } from './middlewares/advancedAuditLogger';
 
-// Import models (to ensure they are registered with Sequelize)
-import './models/User';
-import './models/Doctor';
-import './models/Appointment';
-import './models/Hospital';
-import './models/MedicalRecord';
-import './models/Billing';
-import './models/LabResult';
-import './models/Inpatient';
-import './models/Specialization';
-
 // Import routes
 import mfaRoutes from './routes/mfaRoutes';
 import specializationRoutes from './routes/specializationRoutes';
@@ -34,7 +21,37 @@ import appointmentRoutes from './routes/appointmentRoutes';
 import hospitalRoutes from './routes/hospitalRoutes';
 import medicalRecordRoutes from './routes/medicalRecordRoutes';
 import billingRoutes from './routes/billingRoutes';
+import labResultRoutes from './routes/labResultRoutes';
+import inpatientRoutes from './routes/inpatientRoutes';
 import integrationRoutes from './routes/integrationRoutes';
+
+// Import models (to ensure they are registered with Sequelize)
+import './models/User';
+import './models/Doctor';
+import './models/Hospital';
+import './models/MedicalRecord';
+import './models/LabResult';
+import './models/Inpatient';
+import './models/Specialization';
+
+// Initialize Express app
+const app: Application = express();
+const PORT = process.env.PORT || 3001;
+const API_VERSION = 'v1';
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(compression());
+app.use(morgan('combined'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+}));
+app.use(auditLogger);
 
 // Prometheus metrics endpoint
 app.get('/metrics', prometheusMetricsRoute);
