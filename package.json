@@ -1,7 +1,7 @@
 {
   "name": "siloam-hospital-system",
   "version": "1.0.0",
-  "description": "International Standard Hospital Management System",
+  "description": "International Standard Hospital Management System - Updated for Vercel deployment",
   "author": "Siloam Hospitals",
   "license": "MIT",
   "private": true,
